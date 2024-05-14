@@ -15,7 +15,7 @@ rp_module_help="ROM Extensions: .bin .cue .cbn .img .iso .m3u .mdf .pbp .toc .z 
 rp_module_licence="GPL2 https://raw.githubusercontent.com/libretro/beetle-psx-libretro/master/COPYING"
 rp_module_repo="git https://github.com/libretro/beetle-psx-libretro.git master"
 rp_module_section="opt x86=main"
-rp_module_flags="!arm"
+rp_module_flags="arm"
 
 function depends_lr-beetle-psx() {
     local depends=(libvulkan-dev libgl1-mesa-dev)
