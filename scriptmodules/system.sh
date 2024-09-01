@@ -68,7 +68,12 @@ function conf_binary_vars() {
     __binary_host="files.retropie.org.uk"
     __binary_base_url="https://$__binary_host/binaries"
 
-    __binary_path="$__os_codename/$__platform"
+    __binary_path="$__os_codename"
+    # add -64 suffix for 64bit
+    isPlatform "64bit" && __binary_path+="-64"
+    # add platform folder (eg. rpi4)
+    __binary_path+="/$__platform"
+
     isPlatform "kms" && __binary_path+="/kms"
     __binary_url="$__binary_base_url/$__binary_path"
 
@@ -198,10 +203,10 @@ function get_os_version() {
                 __platform_flags+=(xbian)
             fi
 
-            # we provide binaries for RPI on Raspberry Pi OS 10/11
+            # we provide binaries for RPI on Raspberry Pi OS 10/11/12
             if isPlatform "rpi" && \
                isPlatform "32bit" && \
-               [[ "$__os_debian_ver" -ge 10 && "$__os_debian_ver" -le 11 ]]; then
+               [[ "$__os_debian_ver" -ge 10 && "$__os_debian_ver" -le 12 ]]; then
                # only set __has_binaries if not already set
                [[ -z "$__has_binaries" ]] && __has_binaries=1
             fi
@@ -543,7 +548,9 @@ function cpu_armv7() {
 
 function cpu_armv8() {
     local cpu="$1"
-    __default_cpu_flags="-mcpu=$cpu"
+    if [[ -n "$cpu" ]]; then
+        __default_cpu_flags="-mcpu=$cpu"
+    fi
     if isPlatform "32bit"; then
         __default_cpu_flags+="  -mfpu=neon-fp-armv8"
         __platform_flags+=(arm armv8 neon)
@@ -591,6 +598,18 @@ function platform_rpi4() {
 
 function platform_rpi5() {
     cpu_armv8 "cortex-a76"
+    __platform_flags+=(rpi gles gles3 gles31)
+}
+
+function platform_rpi-armv8() {
+    __default_cpu_flags="-march=armv8-a"
+    cpu_armv8
+    __platform_flags+=(rpi gles gles3 gles31)
+}
+
+function platform_rpi-armv8-1() {
+    __default_cpu_flags="-march=armv8.1-a"
+    cpu_armv8
     __platform_flags+=(rpi gles gles3 gles31)
 }
 
