@@ -17,6 +17,10 @@ rp_module_repo="git https://github.com/libretro/mame.git :_get_version_lr-mame"
 rp_module_section="exp"
 rp_module_flags="!:\$__gcc_version:-lt:7"
 
+function _get_dir_name_lr-mame() {
+    echo "mame"
+}
+
 function _get_version_lr-mame() {
     if compareVersions "$(gcc -dumpfullversion)" lt 10.3.0; then
         echo "lrmame0264"
@@ -59,6 +63,7 @@ function install_lr-mame() {
         'COPYING'
         'mamearcade_libretro.so'
         'README.md'
+        'plugins'
     )
 }
 
@@ -70,4 +75,26 @@ function configure_lr-mame() {
         addEmulator 0 "$md_id" "$system" "$md_inst/mamearcade_libretro.so"
         addSystem "$system"
     done
+
+    [[ "$md_mode" == "remove" ]] && return
+
+    local dir_name="$(_get_dir_name_${md_id})"
+    mkUserDir "$biosdir/$dir_name"
+    mkUserDir "$biosdir/$dir_name/ini"
+
+    local mame_ini_path="$biosdir/$dir_name/ini/mame.ini"
+    if [[ ! -f "$mame_ini_path" ]]; then
+        echo "pluginspath $biosdir/$dir_name/plugins" >"$mame_ini_path"
+    fi
+    
+    local plugin_ini_path="$biosdir/$dir_name/ini/plugin.ini"
+    if [[ ! -f "$plugin_ini_path" ]]; then
+        echo "hiscore                   1" >"$plugin_ini_path"
+    fi
+
+    if [[ ! -d "$biosdir/$dir_name/plugins" ]]; then
+        mv "$md_inst/plugins" "$biosdir/$dir_name/"
+    fi
+    chown "$__user":"$__group" "$mame_ini_path" "$plugin_ini_path"
+    chown "$__user":"$__group" -R "$biosdir/$dir_name/plugins/"
 }
